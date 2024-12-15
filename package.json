@@ -1,10 +1,15 @@
 {
-  "name": "@hexlet/code",
+  "name": "my-webpack-project",
   "version": "1.0.0",
-  "description": "[![Actions Status](https://github.com/ilija8897/frontend-project-11/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/ilija8897/frontend-project-11/actions)",
+  "description": "My webpack project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode=production --node-env=production",
+    "build:dev": "webpack --mode=development",
+    "build:prod": "webpack --mode=production --node-env=production",
+    "watch": "webpack --watch",
+    "serve": "webpack serve"
   },
   "repository": {
     "type": "git",
@@ -17,10 +22,29 @@
   },
   "homepage": "https://github.com/ilija8897/frontend-project-11#readme",
   "devDependencies": {
+    "@webpack-cli/generators": "^3.0.7",
+    "autoprefixer": "^10.4.20",
+    "css-loader": "^7.1.1",
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.29.1",
+    "html-webpack-plugin": "^5.6.0",
+    "postcss-loader": "^8.1.1",
+    "prettier": "^2.8.4",
+    "sass-loader": "^16.0.4",
+    "style-loader": "^4.0.0",
     "webpack": "^5.91.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4",
+    "workbox-webpack-plugin": "^7.1.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "babel-loader": "^9.2.1",
+    "bootstrap": "^5.3.3",
+    "i18next": "^23.12.3",
+    "on-change": "^5.0.1",
+    "sass": "^1.57.1",
+    "yup": "^1.5.0"
   }
 }
