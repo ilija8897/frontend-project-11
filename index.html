@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap w/ Webpack</title>
+  </head>
+  <body>
+    <form class="row g-3 needs-validation">
+      <div class="col-md-4">
+        <label for="url-input" class="form-label">RSS Url</label>
+        <div class="input-group has-validation">
+          <input name="url" type="text" class="form-control" id="url-input" placeholder="http://example.ru" required>
+          <div class="invalid-feedback">
+            Please type valid path
+          </div>
+          <div class="valid-feedback">
+            Looks good!
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Submit form</button>
+      </div>
+    </form>
+    <ul class="feeds-list"></ul>
+  </body>
+</html>
