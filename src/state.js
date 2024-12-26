@@ -1,25 +1,24 @@
 import onChange from "on-change";
+import { elements } from './common.js';
 
 const handleFeeds = (state) => {
     const newFeed = document.createElement('li');
-    console.log(state.feeds[state.feeds.length - 1]);
-    // console.log(document.querySelector('.feed-list'));
-    
+
     newFeed.textContent = state.feeds[state.feeds.length - 1];
-    // console.log(newFeed);
-    
-    document.querySelector('.feeds-list').appendChild(newFeed);
+
+    elements.feedsList.appendChild(newFeed);
 
 }
 
 const handleForm = (state) => {
-    const input = document.querySelector('#url-input');
-
-    if (!state.form.isValid) input.classList.add('is-invalid');
+    if (!state.form.isValid) {
+        elements.input.classList.add('is-invalid');
+        elements.errorLabel.textContent = state.form.error;
+    }
     if (state.form.isValid) {
-        input.value = '';
-        input.classList.remove('is-invalid');
-        input.focus()
+        elements.input.value = '';
+        elements.input.classList.remove('is-invalid');
+        elements.input.focus()
     }
 }
 
@@ -28,17 +27,19 @@ const state = {
     form: {},
 }
 
-const watchedState = onChange(state, (path) => {
-    switch (path) {
-    case 'feeds':
-        handleFeeds(state);
-        break;
-    case 'form':
-        handleForm(state);
-        break;
-    default:
-        break;
-    }
-});
+const appState = () => {
+    return onChange(state, (path) => {
+        switch (path) {
+        case 'feeds':
+            handleFeeds(state);
+            break;
+        case 'form':
+            handleForm(state);
+            break;
+        default:
+            break;
+        }
+    });
+}
 
-export default watchedState;
+export default appState;
