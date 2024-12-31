@@ -3,6 +3,7 @@ export const elements = {
     input: document.querySelector('#url-input'),
     errorLabel: document.querySelector('.invalid-feedback'),
     feedsList: document.querySelector('.feeds-list'),
+    postsList: document.querySelector('.posts-list'),
     button: document.querySelector('form button[type=submit]'),
     title: document.querySelector('.title'),
 };

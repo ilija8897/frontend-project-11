@@ -7,17 +7,20 @@
   </head>
   <body>
     <div class="container">
-    <h3 class="title"></h3>
-    <form class="needs-validation">
-      <div class="col-md-3">
-        <div class="input-group has-validation">
-          <input name="url" type="text" class="form-control" id="url-input" placeholder="http://example.ru" required>
-          <div class="invalid-feedback"></div>
+      <h3 class="py-3 title text-center"></h3>
+      <form class="needs-validation">
+        <div class="row col-md-12 form-body">
+          <div class="col-md-6">
+            <input name="url" type="text" class="form-control" id="url-input" placeholder="http://example.ru" required>
+            <div class="invalid-feedback"></div>
+          </div>
+          <button class="col-md-3 btn btn-primary" type="submit"></button>
         </div>
-        <button class="btn btn-primary" type="submit"></button>
+      </form>
+      <div class="row">
+        <ul class="py-3 col-md-6 posts-list"></ul>
+        <ul class="py-3 col-md-6 feeds-list"></ul>
       </div>
-    </form>
-    <ul class="feeds-list"></ul>
     </div>
   </body>
 </html>
