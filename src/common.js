@@ -6,4 +6,5 @@ export const elements = {
     postsList: document.querySelector('.posts-list'),
     button: document.querySelector('form button[type=submit]'),
     title: document.querySelector('.title'),
+    modal: document.querySelector('.modal'),
 };

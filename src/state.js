@@ -2,7 +2,7 @@ import onChange from "on-change";
 import { elements } from './common.js';
 
 const handleFeeds = (state) => {
-    console.log(state.feeds);
+    // console.log(state.feeds);
     
     state.feeds.forEach(feed => {
         const newFeed = document.createElement('li');
@@ -21,26 +21,35 @@ const handlePosts = (state, i18next) => {
 
     const postsListItems = posts.map((post) => {
         const postElement = document.createElement('li');
-        postElement.classList.add('d-flex');
+        postElement.classList.add('d-flex', 'py-3', post.readed ? 'fw-normal' : 'fw-bold');
         const postLink = document.createElement('a');
-        postLink.setAttribute('href', post.link);
 
-        postLink.dataset.id = post.id;
         postLink.textContent = post.title;
-        postLink.setAttribute('target', '_blank');
         postElement.append(postLink);
         const button = document.createElement('button');
         button.setAttribute('type', 'button');
-        button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+        button.classList.add('btn', 'btn-outline-primary', 'btn-m');
         button.dataset.id = post.id;
         button.dataset.bsToggle = 'modal';
         button.dataset.bsTarget = '#modal';
         button.textContent = i18next.t('postButton');
+        button.addEventListener('click', (e) => {
+            state.posts.find(item => item.id === post.id ).readed = true;
+            postElement.classList.remove('fw-bold');
+            postElement.classList.add('fw-normal');
+            const modal = document.getElementById('modal');
+            const modalTitle = modal.querySelector('.modal-title');
+            const modalBody = modal.querySelector('.modal-body');
+            modalTitle.textContent = post.title;
+            modalBody.textContent = post.description;
+            modal.classList.add('show');
+            modal.style.display = 'block';
+        });
         postElement.append(button);
         return postElement;
     });
 
-    elements.postsList.append(...postsListItems);
+    elements.postsList.replaceChildren(...postsListItems);
 };
 
 const handleForm = (state) => {
@@ -76,6 +85,9 @@ const appState = (i18next) => {
             break;
         case 'form':
             handleForm(state);
+            break;
+        case 'modal':
+            handleModal(state);
             break;
         default:
             break;

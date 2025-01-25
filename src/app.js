@@ -1,4 +1,5 @@
 import './style.scss';
+import 'bootstrap';
 import { string, object } from 'yup';
 import getState from './state.js';
 import { elements } from './common.js';
@@ -14,17 +15,12 @@ const appInit = () => {
         resources: {
             ru: {
                 translation: {
-                    loadingStatus: {
-                        success: 'RSS загружен',
-                    },
                     errors: {
                         exist: 'RSS уже существует',
                         required: 'Обязательное поле',
                         invalidUrl: 'Не верная ссылка',
                         unknownError: 'Неизвестная ошибка. Что-то пошло не так.',
                     },
-                    feeds: 'Фиды',
-                    posts: 'Посты',
                     postButton: 'Просмотр',
                     buttonSubmit: 'Добавить',
                     title: 'RSS агрегатор'
@@ -43,31 +39,20 @@ const appInit = () => {
     const getRssData = (url) => {
         return axios.get(getProxyUrl(url))
         .then((res) => {
-            // if (res.data.error) throw new Error(res.data.error.name);
-            
             const { title, description, posts } = rssParser(res.data.contents);
             
             const feed = {
                 url, id: uuidv4(), title, description,
             };
-            const postsItems = posts.map((item) => ({ ...item, channelId: feed.id, id: uuidv4() }));
+            const postsItems = posts.map((item) => ({ ...item, parentFeed: feed.id, id: uuidv4() }));
             state.posts.unshift(...postsItems);
             state.feeds.unshift(feed);
 
             state.loadRssStatus.error = false;
-            // state.loadRssStatus.status = 'idle';
-            // state.form = {
-            //     ...watchedState.form,
-            //     status: 'filling',
-            //     error: null,
-            // };
             })
             .catch((e) => {
-                console.log('error12', e);
                 state.loadRssStatus.error = true;
                 throw new Error(e);
-                
-                // watchedState.loadingProcess.error = getLoadingProcessErrorType(e);
             });
 
     }
@@ -83,7 +68,7 @@ const appInit = () => {
 
         const alredyExist = createdFeeds.includes(url);
         if (alredyExist) throw new Error(i18next.t('errors.exist'));
-
+        updatePosts();
         return formSchema.validate({ url });
     };
 
@@ -97,7 +82,6 @@ const appInit = () => {
         .then(async (e) => {
             await getRssData(url);
             state.form = {...state.form, isValid: true};
-            // state.feeds = [...state.feeds, url];
         })
         .catch((error) => {
             console.log('error1', error);
@@ -105,6 +89,45 @@ const appInit = () => {
             state.form = {...state.form, error, isValid: false};
         });
     });
+
+    function updatePosts() {
+        setTimeout(() => {
+            state.feeds.forEach(feed => {
+                return axios.get(getProxyUrl(feed.url))
+                .then((res) => {
+                    const { posts } = rssParser(res.data.contents);
+                    const updatedPosts = posts.map((post) => ({ ...post, parentFeed: feed.id, id: uuidv4() }));
+
+                    const oldPosts = state.posts.filter((post) => post.parentFeed === feed.id);
+                    const newPosts = updatedPosts.filter(updPost => {
+                        return !oldPosts.some(oldPost => updPost.title === oldPost.title)
+                    });
+
+                    state.posts.unshift(...newPosts);
+                    state.loadRssStatus.error = false;
+                    })
+                    .catch((e) => {
+                        state.loadRssStatus.error = true;
+                        throw new Error(e);
+                    });
+            })
+            updatePosts();
+        }, 5000);
+    };
+    // elements.postsList.addEventListener('click', (e) => {
+    //     // e.preventDefault();
+    //     // if (!('id' in evt.target.dataset)) {
+    //     //     return;
+    //     // }
+    //     // console.log(e.target.dataset);
+    //     // console.log(123123123);
+        
+
+    //     // const { id } = evt.target.dataset;
+    //     // watchedState.modal.postId = String(id);
+    //     // watchedState.ui.seenPosts.add(id);
+    // });
+
 };
 
 export default appInit;
