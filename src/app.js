@@ -15,10 +15,13 @@ const appInit = () => {
         resources: {
             ru: {
                 translation: {
+                    succesFeed: 'RSS успешно загружен',
                     errors: {
                         exist: 'RSS уже существует',
                         required: 'Обязательное поле',
-                        invalidUrl: 'Не верная ссылка',
+                        invalidUrl: 'Ссылка должна быть валидным URL',
+                        invalidRSS: 'Ресурс не содержит валидный RSS',
+                        networkError: 'Ошибка сети',
                         unknownError: 'Неизвестная ошибка. Что-то пошло не так.',
                     },
                     postButton: 'Просмотр',
@@ -51,7 +54,15 @@ const appInit = () => {
             state.loadRssStatus.error = false;
             })
             .catch((e) => {
-                state.loadRssStatus.error = true;
+                console.log(e);
+                
+                if (e.message === 'Parser error') {
+                    state.loadRssStatus.invalidRSS = true;
+                }
+                
+                if (e.isAxiosError) {
+                    state.loadRssStatus.networkError = true;
+                }
                 throw new Error(e);
             });
 
@@ -61,14 +72,11 @@ const appInit = () => {
     elements.title.textContent = i18next.t('title');
 
     const validateNewFeed = async (url) => {
+        const createdFeeds = state.feeds.map((feed) => feed.url);
         const formSchema = object({
-            url: string().required().url(),
+            url: string().required(i18next.t('errors.required')).url(i18next.t('errors.invalidUrl')).notOneOf(createdFeeds, i18next.t('errors.exist')),
         });
-        const createdFeeds = state.feeds.map((feed) => feed);
 
-        const alredyExist = createdFeeds.includes(url);
-        if (alredyExist) throw new Error(i18next.t('errors.exist'));
-        updatePosts();
         return formSchema.validate({ url });
     };
 
@@ -84,8 +92,6 @@ const appInit = () => {
             state.form = {...state.form, isValid: true};
         })
         .catch((error) => {
-            console.log('error1', error);
-            
             state.form = {...state.form, error, isValid: false};
         });
     });
@@ -111,9 +117,9 @@ const appInit = () => {
                         throw new Error(e);
                     });
             })
-            updatePosts();
         }, 5000);
     };
+    updatePosts();
     // elements.postsList.addEventListener('click', (e) => {
     //     // e.preventDefault();
     //     // if (!('id' in evt.target.dataset)) {

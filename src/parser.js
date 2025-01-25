@@ -1,11 +1,10 @@
 const rssParser = (rss) => {
     const domParser = new DOMParser();
     const rssHtml = domParser.parseFromString(rss, 'text/xml');
-    console.log(rssHtml);
-    
+
     const isError = rssHtml.querySelector('parsererror');
     if (isError) {
-        throw new Error(parseError.textContent);
+        throw new Error('Parser error');
     }
 
     const titleText = rssHtml.querySelector('channel > title').textContent;

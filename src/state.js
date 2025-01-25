@@ -1,10 +1,10 @@
 import onChange from "on-change";
 import { elements } from './common.js';
 
-const handleFeeds = (state) => {
+const handleFeeds = (state, i18next) => {
     // console.log(state.feeds);
     
-    state.feeds.forEach(feed => {
+    state.feeds.forEach((feed) => {
         const newFeed = document.createElement('li');
         const feedTitle = document.createElement('h5');
         feedTitle.textContent = feed.title;
@@ -13,6 +13,7 @@ const handleFeeds = (state) => {
         newFeed.append(feedTitle)
         newFeed.append(feedDescr);
         elements.feedsList.append(newFeed)
+        elements.errorLabel.textContent = i18next.t('succesFeed');
     })
 }
 
@@ -21,9 +22,9 @@ const handlePosts = (state, i18next) => {
 
     const postsListItems = posts.map((post) => {
         const postElement = document.createElement('li');
-        postElement.classList.add('d-flex', 'py-3', post.readed ? 'fw-normal' : 'fw-bold');
+        postElement.classList.add('d-flex', 'py-3');
         const postLink = document.createElement('a');
-
+        postLink.classList.add(post.readed ? 'fw-normal' : 'fw-bold');
         postLink.textContent = post.title;
         postElement.append(postLink);
         const button = document.createElement('button');
@@ -35,15 +36,15 @@ const handlePosts = (state, i18next) => {
         button.textContent = i18next.t('postButton');
         button.addEventListener('click', (e) => {
             state.posts.find(item => item.id === post.id ).readed = true;
-            postElement.classList.remove('fw-bold');
-            postElement.classList.add('fw-normal');
+            postLink.classList.remove('fw-bold');
+            postLink.classList.add('fw-normal');
             const modal = document.getElementById('modal');
             const modalTitle = modal.querySelector('.modal-title');
             const modalBody = modal.querySelector('.modal-body');
             modalTitle.textContent = post.title;
             modalBody.textContent = post.description;
-            modal.classList.add('show');
-            modal.style.display = 'block';
+            // modal.classList.add('show');
+            // modal.style.display = 'block';
         });
         postElement.append(button);
         return postElement;
@@ -52,7 +53,7 @@ const handlePosts = (state, i18next) => {
     elements.postsList.replaceChildren(...postsListItems);
 };
 
-const handleForm = (state) => {
+const handleForm = (state, i18next) => {
     if (!state.form.isValid) {
         elements.input.classList.add('is-invalid');
         elements.errorLabel.textContent = state.form.error;
@@ -62,10 +63,18 @@ const handleForm = (state) => {
         elements.input.classList.remove('is-invalid');
         elements.input.focus()
     }
+    if (state.loadRssStatus.invalidRSS) {
+        elements.errorLabel.textContent = i18next.t('errors.invalidRSS');
+    }
+    if (state.loadRssStatus.networkError) {
+        elements.errorLabel.textContent = i18next.t('errors.networkError');
+    }
 }
 
 const state = {
     loadRssStatus: {
+        invalidRSS: false,
+        networkError: false,
         error: false,
         loading: false,
     },
@@ -78,13 +87,13 @@ const appState = (i18next) => {
     return onChange(state, (path) => {
         switch (path) {
         case 'feeds':
-            handleFeeds(state);
+            handleFeeds(state, i18next);
             break;
         case 'posts':
             handlePosts(state, i18next);
             break;
         case 'form':
-            handleForm(state);
+            handleForm(state, i18next);
             break;
         case 'modal':
             handleModal(state);

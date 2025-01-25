@@ -11,8 +11,8 @@
       <form class="needs-validation">
         <div class="row col-md-12 form-body">
           <div class="col-md-6">
-            <input name="url" type="text" class="form-control" id="url-input" placeholder="http://example.ru" required>
-            <div class="invalid-feedback"></div>
+            <input aria-label="url" name="url" type="text" class="form-control" id="url-input" placeholder="http://example.ru" required>
+            <div class="feedback"></div>
           </div>
           <button class="col-md-3 btn btn-primary" type="submit"></button>
         </div>
@@ -30,6 +30,9 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn" data-bs-dismiss="modal">Закрыть</button>
             </div>
           </div>
         </div>
