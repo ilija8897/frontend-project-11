@@ -2,11 +2,10 @@ name: self-check
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
