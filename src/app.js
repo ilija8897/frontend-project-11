@@ -40,38 +40,38 @@ const appInit = () => {
   };
 
   const getRssData = (url) => axios
-      .get(getProxyUrl(url))
-      .then((res) => {
-        const { title, description, posts } = rssParser(res.data.contents);
+    .get(getProxyUrl(url))
+    .then((res) => {
+      const { title, description, posts } = rssParser(res.data.contents);
 
-        const feed = {
-          url,
-          id: uuidv4(),
-          title,
-          description,
-        };
-        const postsItems = posts.map((item) => ({
-          ...item,
-          parentFeed: feed.id,
-          id: uuidv4(),
-        }));
-        state.posts.unshift(...postsItems);
-        state.feeds.unshift(feed);
+      const feed = {
+        url,
+        id: uuidv4(),
+        title,
+        description,
+      };
+      const postsItems = posts.map((item) => ({
+        ...item,
+        parentFeed: feed.id,
+        id: uuidv4(),
+      }));
+      state.posts.unshift(...postsItems);
+      state.feeds.unshift(feed);
 
-        state.loadRssStatus.error = false;
-      })
-      .catch((e) => {
-        console.log(e);
+      state.loadRssStatus.error = false;
+    })
+    .catch((e) => {
+      console.log(e);
 
-        if (e.message === 'Parser error') {
-          state.loadRssStatus.invalidRSS = true;
-        }
+      if (e.message === 'Parser error') {
+        state.loadRssStatus.invalidRSS = true;
+      }
 
-        if (e.isAxiosError) {
-          state.loadRssStatus.networkError = true;
-        }
-        throw new Error(e);
-      });
+      if (e.isAxiosError) {
+        state.loadRssStatus.networkError = true;
+      }
+      throw new Error(e);
+    });
 
   elements.button.textContent = i18next.t('buttonSubmit');
   elements.title.textContent = i18next.t('title');
@@ -107,29 +107,29 @@ const appInit = () => {
   function updatePosts() {
     setTimeout(() => {
       state.feeds.forEach((feed) => axios
-          .get(getProxyUrl(feed.url))
-          .then((res) => {
-            const { posts } = rssParser(res.data.contents);
-            const updatedPosts = posts.map((post) => ({
-              ...post,
-              parentFeed: feed.id,
-              id: uuidv4(),
-            }));
-
-            const oldPosts = state.posts.filter(
-              (post) => post.parentFeed === feed.id,
-            );
-            const newPosts = updatedPosts.filter(
-              (updPost) => !oldPosts.some((oldPost) => updPost.title === oldPost.title),
-            );
-
-            state.posts.unshift(...newPosts);
-            state.loadRssStatus.error = false;
-          })
-          .catch((e) => {
-            state.loadRssStatus.error = true;
-            throw new Error(e);
+        .get(getProxyUrl(feed.url))
+        .then((res) => {
+          const { posts } = rssParser(res.data.contents);
+          const updatedPosts = posts.map((post) => ({
+            ...post,
+            parentFeed: feed.id,
+            id: uuidv4(),
           }));
+
+          const oldPosts = state.posts.filter(
+            (post) => post.parentFeed === feed.id,
+          );
+          const newPosts = updatedPosts.filter(
+            (updPost) => !oldPosts.some((oldPost) => updPost.title === oldPost.title),
+          );
+
+          state.posts.unshift(...newPosts);
+          state.loadRssStatus.error = false;
+        })
+        .catch((e) => {
+          state.loadRssStatus.error = true;
+          throw new Error(e);
+        }));
     }, 5000);
   }
   updatePosts();

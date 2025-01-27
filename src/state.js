@@ -1,7 +1,18 @@
 import onChange from 'on-change';
 import elements from './common.js';
 
-const handleFeeds = (state, i18next) => {
+const state = {
+  loadRssStatus: {
+    invalidRSS: false,
+    networkError: false,
+    error: false,
+    loading: false,
+  },
+  feeds: [],
+  posts: [],
+  form: {},
+};
+const handleFeeds = (i18next) => {
   // console.log(state.feeds);
 
   state.feeds.forEach((feed) => {
@@ -17,7 +28,7 @@ const handleFeeds = (state, i18next) => {
   });
 };
 
-const handlePosts = (state, i18next) => {
+const handlePosts = (i18next) => {
   const { posts } = state;
 
   const postsListItems = posts.map((post) => {
@@ -51,7 +62,7 @@ const handlePosts = (state, i18next) => {
   elements.postsList.replaceChildren(...postsListItems);
 };
 
-const handleForm = (state, i18next) => {
+const handleForm = (i18next) => {
   if (!state.form.isValid) {
     elements.input.classList.add('is-invalid');
     elements.errorLabel.textContent = state.form.error;
@@ -69,32 +80,20 @@ const handleForm = (state, i18next) => {
   }
 };
 
-const state = {
-  loadRssStatus: {
-    invalidRSS: false,
-    networkError: false,
-    error: false,
-    loading: false,
-  },
-  feeds: [],
-  posts: [],
-  form: {},
-};
-
 const appState = (i18next) => onChange(state, (path) => {
-    switch (path) {
-      case 'feeds':
-        handleFeeds(state, i18next);
-        break;
-      case 'posts':
-        handlePosts(state, i18next);
-        break;
-      case 'form':
-        handleForm(state, i18next);
-        break;
-      default:
-        break;
-    }
-  });
+  switch (path) {
+    case 'feeds':
+      handleFeeds(i18next);
+      break;
+    case 'posts':
+      handlePosts(i18next);
+      break;
+    case 'form':
+      handleForm(i18next);
+      break;
+    default:
+      break;
+  }
+});
 
 export default appState;
