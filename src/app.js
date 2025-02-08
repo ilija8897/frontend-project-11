@@ -5,10 +5,28 @@ import { v4 as uuidv4 } from 'uuid';
 import i18next from 'i18next';
 import axios from 'axios';
 import getState from './state.js';
-import elements from './common.js';
+import { FORM_STATUS } from './constants.js';
 import rssParser from './parser.js';
 
 const appInit = () => {
+  const initState = {
+    feeds: [],
+    posts: [],
+    error: false,
+    status: FORM_STATUS.INIT,
+  };
+
+  const elements = {
+    form: document.querySelector('form'),
+    input: document.querySelector('#url-input'),
+    errorLabel: document.querySelector('.feedback'),
+    feedsList: document.querySelector('.feeds-list'),
+    postsList: document.querySelector('.posts-list'),
+    button: document.querySelector('form button[type=submit]'),
+    title: document.querySelector('.title'),
+    modal: document.querySelector('.modal'),
+  };
+
   i18next.init({
     lng: 'ru',
     debug: true,
@@ -25,13 +43,11 @@ const appInit = () => {
             unknownError: 'Неизвестная ошибка. Что-то пошло не так.',
           },
           postButton: 'Просмотр',
-          buttonSubmit: 'Добавить',
-          title: 'RSS агрегатор',
         },
       },
     },
   });
-  const state = getState(i18next);
+  const state = getState(initState, i18next, elements);
   const getProxyUrl = (url) => {
     const urlWithProxy = new URL('/get', 'https://allorigins.hexlet.app');
     urlWithProxy.searchParams.set('url', url);
@@ -43,7 +59,6 @@ const appInit = () => {
     .get(getProxyUrl(url))
     .then((res) => {
       const { title, description, posts } = rssParser(res.data.contents);
-
       const feed = {
         url,
         id: uuidv4(),
@@ -57,27 +72,24 @@ const appInit = () => {
       }));
       state.posts.unshift(...postsItems);
       state.feeds.unshift(feed);
-
-      state.loadRssStatus.error = false;
+      state.error = false;
+      state.status = FORM_STATUS.SUCCESS;
     })
     .catch((e) => {
-      console.log(e);
-
-      if (e.message === 'Parser error') {
-        state.loadRssStatus.invalidRSS = true;
+      console.log('res', e);
+      console.log('res', e.message);
+      console.log('res', e.isAxiosError);
+      if (e.message === 'Network Error') {
+        state.error = 'errors.networkError';
+      } else {
+        state.error = e.message || 'errors.networkError';
       }
 
-      if (e.isAxiosError) {
-        state.loadRssStatus.networkError = true;
-      }
-      throw new Error(e);
+      state.status = FORM_STATUS.ERROR;
     });
 
-  elements.button.textContent = i18next.t('buttonSubmit');
-  elements.title.textContent = i18next.t('title');
-
-  const validateNewFeed = async (url) => {
-    const createdFeeds = state.feeds.map((feed) => feed.url);
+  const validateNewFeed = async (url, feeds) => {
+    const createdFeeds = feeds.map((feed) => feed.url);
     const formSchema = object({
       url: string()
         .required(i18next.t('errors.required'))
@@ -87,22 +99,6 @@ const appInit = () => {
 
     return formSchema.validate({ url });
   };
-
-  elements.form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const data = new FormData(e.target);
-
-    const url = data.get('url');
-    validateNewFeed(url)
-      .then(async () => {
-        await getRssData(url);
-        state.form = { ...state.form, isValid: true };
-      })
-      .catch((error) => {
-        state.form = { ...state.form, error, isValid: false };
-      });
-  });
 
   function updatePosts() {
     setTimeout(() => {
@@ -115,24 +111,39 @@ const appInit = () => {
             parentFeed: feed.id,
             id: uuidv4(),
           }));
-
           const oldPosts = state.posts.filter(
             (post) => post.parentFeed === feed.id,
           );
           const newPosts = updatedPosts.filter(
             (updPost) => !oldPosts.some((oldPost) => updPost.title === oldPost.title),
           );
-
           state.posts.unshift(...newPosts);
-          state.loadRssStatus.error = false;
+          state.error = false;
         })
         .catch((e) => {
-          state.loadRssStatus.error = true;
-          throw new Error(e);
+          state.error = e;
+          state.status = FORM_STATUS.ERROR;
         }));
+      updatePosts();
     }, 5000);
   }
-  updatePosts();
+
+  elements.form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const data = new FormData(e.target);
+    const url = data.get('url');
+    validateNewFeed(url, state.feeds)
+      .then(async () => {
+        state.status = FORM_STATUS.SUBMIT;
+        await getRssData(url);
+        updatePosts();
+      })
+      .catch((error) => {
+        state.error = error.message;
+        state.status = FORM_STATUS.ERROR;
+      });
+  });
 };
 
 export default appInit;

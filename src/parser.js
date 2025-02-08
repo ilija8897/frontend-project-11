@@ -4,7 +4,7 @@ const rssParser = (rss) => {
 
   const isError = rssHtml.querySelector('parsererror');
   if (isError) {
-    throw new Error('Parser error');
+    throw new Error('errors.invalidRSS');
   }
 
   const titleText = rssHtml.querySelector('channel > title').textContent;
