@@ -100,27 +100,27 @@ const appInit = () => {
   };
 
   function updatePosts() {
-      const runningUpdates = state.feeds.map((feed) => axios
-        .get(getProxyUrl(feed.url))
-        .then((res) => {
-          const { posts } = rssParser(res.data.contents);
-          const updatedPosts = posts.map((post) => ({
-            ...post,
-            parentFeed: feed.id,
-            id: uuidv4(),
-          }));
-          const oldPosts = state.posts.filter(
-            (post) => post.parentFeed === feed.id,
-          );
-          const newPosts = updatedPosts.filter(
-            (updPost) => !oldPosts.some((oldPost) => updPost.title === oldPost.title),
-          );
-          state.posts.unshift(...newPosts);
-          state.error = false;
-        })
-        .catch((e) => {
-          console.log(e);
+    const runningUpdates = state.feeds.map((feed) => axios
+      .get(getProxyUrl(feed.url))
+      .then((res) => {
+        const { posts } = rssParser(res.data.contents);
+        const updatedPosts = posts.map((post) => ({
+          ...post,
+          parentFeed: feed.id,
+          id: uuidv4(),
         }));
+        const oldPosts = state.posts.filter(
+          (post) => post.parentFeed === feed.id,
+        );
+        const newPosts = updatedPosts.filter(
+          (updPost) => !oldPosts.some((oldPost) => updPost.title === oldPost.title),
+        );
+        state.posts.unshift(...newPosts);
+        state.error = false;
+      })
+      .catch((e) => {
+        console.log(e);
+      }));
 
     Promise.all(runningUpdates).finally(() => {
       setTimeout(() => updatePosts(), 5000);
