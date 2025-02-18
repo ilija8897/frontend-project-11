@@ -88,8 +88,7 @@ const appInit = () => {
       state.status = FORM_STATUS.ERROR;
     });
 
-  const validateNewFeed = async (url, feeds) => {
-    const createdFeeds = feeds.map((feed) => feed.url);
+  const validateNewFeed = async (url, createdFeeds) => {
     const formSchema = object({
       url: string()
         .required(i18next.t('errors.required'))
@@ -101,8 +100,7 @@ const appInit = () => {
   };
 
   function updatePosts() {
-    setTimeout(() => {
-      state.feeds.forEach((feed) => axios
+      const runningUpdates = state.feeds.map((feed) => axios
         .get(getProxyUrl(feed.url))
         .then((res) => {
           const { posts } = rssParser(res.data.contents);
@@ -121,11 +119,12 @@ const appInit = () => {
           state.error = false;
         })
         .catch((e) => {
-          state.error = e;
-          state.status = FORM_STATUS.ERROR;
+          console.log(e);
         }));
-      updatePosts();
-    }, 5000);
+
+    Promise.all(runningUpdates).finally(() => {
+      setTimeout(() => updatePosts(), 5000);
+    });
   }
 
   elements.form.addEventListener('submit', (e) => {
@@ -133,11 +132,12 @@ const appInit = () => {
 
     const data = new FormData(e.target);
     const url = data.get('url');
-    validateNewFeed(url, state.feeds)
+    const createdFeedsUrl = state.feeds.map((feed) => feed.url);
+    validateNewFeed(url, createdFeedsUrl)
       .then(async () => {
         state.status = FORM_STATUS.SUBMIT;
         await getRssData(url);
-        updatePosts();
+        setTimeout(updatePosts, 5000);
       })
       .catch((error) => {
         state.error = error.message;
