@@ -13,16 +13,16 @@ const rssParser = (rss) => {
   ).textContent;
 
   const itemElements = rssHtml.querySelectorAll('channel item');
-  const posts = [...itemElements].map((post) => {
-    const titleElement = post.querySelector('title');
+  const items = [...itemElements].map((item) => {
+    const titleElement = item.querySelector('title');
     const title = titleElement.textContent;
-    const linkElement = post.querySelector('link');
+    const linkElement = item.querySelector('link');
     const link = linkElement.textContent;
-    const descriptionElement = post.querySelector('description');
+    const descriptionElement = item.querySelector('description');
     const description = descriptionElement.textContent;
     return { title, link, description };
   });
-  return { title: titleText, description: descriptionText, posts };
+  return { title: titleText, description: descriptionText, items };
 };
 
 export default rssParser;

@@ -1,22 +1,23 @@
-import { FORM_STATUS } from './constants.js';
+import { PROCESS_STATUS } from './constants.js';
 
 export const formFeedbackReaction = (state, i18next, elements) => {
   const { input, button, errorLabel } = elements;
+
   if (state.error) {
     errorLabel.textContent = i18next.t(state.error);
   }
   switch (state.status) {
-    case FORM_STATUS.SUBMIT:
+    case PROCESS_STATUS.SUBMIT:
       button.disabled = true;
       input.disabled = true;
       break;
-    case FORM_STATUS.SUCCESS:
+    case PROCESS_STATUS.SUCCESS:
       input.disabled = false;
       button.disabled = false;
       input.value = '';
       input.focus();
       break;
-    case FORM_STATUS.ERROR:
+    case PROCESS_STATUS.ERROR:
       input.disabled = false;
       button.disabled = false;
       input.value = '';

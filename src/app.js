@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import i18next from 'i18next';
 import axios from 'axios';
 import getState from './state.js';
-import { FORM_STATUS } from './constants.js';
+import { PROCESS_STATUS } from './constants.js';
 import rssParser from './parser.js';
 
 const appInit = () => {
@@ -13,7 +13,7 @@ const appInit = () => {
     feeds: [],
     posts: [],
     error: false,
-    status: FORM_STATUS.INIT,
+    status: PROCESS_STATUS.INIT,
   };
 
   const elements = {
@@ -58,14 +58,14 @@ const appInit = () => {
   const getRssData = (url) => axios
     .get(getProxyUrl(url))
     .then((res) => {
-      const { title, description, posts } = rssParser(res.data.contents);
+      const { title, description, items } = rssParser(res.data.contents);
       const feed = {
         url,
         id: uuidv4(),
         title,
         description,
       };
-      const postsItems = posts.map((item) => ({
+      const postsItems = items.map((item) => ({
         ...item,
         parentFeed: feed.id,
         id: uuidv4(),
@@ -73,27 +73,24 @@ const appInit = () => {
       state.posts.unshift(...postsItems);
       state.feeds.unshift(feed);
       state.error = false;
-      state.status = FORM_STATUS.SUCCESS;
+      state.status = PROCESS_STATUS.SUCCESS;
     })
     .catch((e) => {
-      console.log('res', e);
-      console.log('res', e.message);
-      console.log('res', e.isAxiosError);
       if (e.message === 'Network Error') {
         state.error = 'errors.networkError';
       } else {
         state.error = e.message || 'errors.networkError';
       }
 
-      state.status = FORM_STATUS.ERROR;
+      state.status = PROCESS_STATUS.ERROR;
     });
 
-  const validateNewFeed = async (url, createdFeeds) => {
+  const validateUrl = async (url, oldUrlArray) => {
     const formSchema = object({
       url: string()
-        .required(i18next.t('errors.required'))
-        .url(i18next.t('errors.invalidUrl'))
-        .notOneOf(createdFeeds, i18next.t('errors.exist')),
+        .required('errors.required')
+        .url('errors.invalidUrl')
+        .notOneOf(oldUrlArray, 'errors.exist'),
     });
 
     return formSchema.validate({ url });
@@ -116,7 +113,6 @@ const appInit = () => {
           (updPost) => !oldPosts.some((oldPost) => updPost.title === oldPost.title),
         );
         state.posts.unshift(...newPosts);
-        state.error = false;
       })
       .catch((e) => {
         console.log(e);
@@ -132,18 +128,18 @@ const appInit = () => {
 
     const data = new FormData(e.target);
     const url = data.get('url');
-    const createdFeedsUrl = state.feeds.map((feed) => feed.url);
-    validateNewFeed(url, createdFeedsUrl)
+    const oldUrlArray = state.feeds.map((feed) => feed.url);
+    validateUrl(url, oldUrlArray)
       .then(async () => {
-        state.status = FORM_STATUS.SUBMIT;
+        state.status = PROCESS_STATUS.SUBMIT;
         await getRssData(url);
-        setTimeout(updatePosts, 5000);
       })
       .catch((error) => {
         state.error = error.message;
-        state.status = FORM_STATUS.ERROR;
+        state.status = PROCESS_STATUS.ERROR;
       });
   });
+  setTimeout(updatePosts, 5000);
 };
 
 export default appInit;
